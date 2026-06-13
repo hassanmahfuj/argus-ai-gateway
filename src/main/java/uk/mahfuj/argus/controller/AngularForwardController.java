@@ -1,4 +1,4 @@
-package uk.mahfuj.aigateway.controller;
+package uk.mahfuj.argus.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

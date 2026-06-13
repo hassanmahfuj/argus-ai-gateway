@@ -8,9 +8,9 @@ gateway:
 
 spring:
   datasource:
-    url: ${JDBC_DATABASE_URL:jdbc:postgresql://localhost:5432/aigateway}
-    username: ${JDBC_DATABASE_USERNAME:aigateway}
-    password: ${JDBC_DATABASE_PASSWORD:aigateway123}
+    url: ${JDBC_DATABASE_URL:jdbc:postgresql://localhost:5432/argus}
+    username: ${JDBC_DATABASE_USERNAME:argus}
+    password: ${JDBC_DATABASE_PASSWORD:argus123}
     hikari:
       connection-timeout: 30000
       maximum-pool-size: 10

@@ -1,4 +1,4 @@
-# AI Gateway
+# Argus
 
 A Spring Boot reverse proxy gateway that forwards AI API requests (OpenAI and Anthropic) to ZAI upstream endpoints, with an Angular + Tailwind CSS management frontend served from the same application.
 
@@ -45,9 +45,9 @@ The `/v1` prefix is stripped before forwarding, so clients using OpenAI-compatib
 ```
 src/
 ├── main/
-│   ├── java/uk/mahfuj/aigateway/
+│   ├── java/uk/mahfuj/argus/
 │   │   ├── config/
-│   │   │   ├── AiGatewayApplication.java   # @SpringBootApplication entry point
+│   │   │   ├── ArgusApplication.java   # @SpringBootApplication entry point
 │   │   │   ├── GatewayProperties.java      # gateway.proxy.* configuration binding
 │   │   │   ├── JacksonConfig.java          # ObjectMapper customisation
 │   │   │   ├── AngularLocalConfig.java     # CORS for local development
@@ -80,7 +80,7 @@ src/
 
 - **Java 21** — for the Spring Boot backend
 - **Node.js 24** — for the Angular frontend (managed by Gradle via node-gradle plugin)
-- **PostgreSQL** — database (defaults to `localhost:5432/aigateway`)
+- **PostgreSQL** — database (defaults to `localhost:5432/argus`)
 
 ### Configuration
 
@@ -106,9 +106,9 @@ Default connection settings (overridable via environment variables):
 
 | Variable                  | Default                              |
 | ------------------------- | ------------------------------------ |
-| `JDBC_DATABASE_URL`       | `jdbc:postgresql://localhost:5432/aigateway` |
-| `JDBC_DATABASE_USERNAME`  | `aigateway`                          |
-| `JDBC_DATABASE_PASSWORD`  | `aigateway123`                       |
+| `JDBC_DATABASE_URL`       | `jdbc:postgresql://localhost:5432/argus` |
+| `JDBC_DATABASE_USERNAME`  | `argus`                          |
+| `JDBC_DATABASE_PASSWORD`  | `argus123`                       |
 
 ---
 
@@ -160,13 +160,13 @@ This automatically runs `npm install` and `ng build` via the node-gradle plugin,
 Run the packaged application:
 
 ```bash
-java -Dspring.profiles.active=production -jar ./build/libs/aigateway-0.0.1-SNAPSHOT.jar
+java -Dspring.profiles.active=production -jar ./build/libs/Argus-0.0.1-SNAPSHOT.jar
 ```
 
 Build a Docker image:
 
 ```bash
-./gradlew bootBuildImage --imageName=uk.mahfuz/aigateway
+./gradlew bootBuildImage --imageName=uk.mahfuz/argus
 ```
 
 ---

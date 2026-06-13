@@ -1,0 +1,53 @@
+<div class="space-y-8">
+  <h1 class="text-3xl font-medium">Token Usage Dashboard</h1>
+
+  <!-- Granularity selector -->
+  <div class="flex gap-2 flex-wrap">
+    @for (g of granularities; track g.value) {
+      <button (click)="changeGranularity(g.value)"
+              [class.bg-blue-600]="selectedGranularity === g.value"
+              [class.text-white]="selectedGranularity === g.value"
+              [class.border-blue-600]="selectedGranularity === g.value"
+              class="px-4 py-2 rounded border border-gray-300 text-sm font-medium cursor-pointer transition-colors">
+        {{ g.label }}
+      </button>
+    }
+  </div>
+
+  <!-- Loading / Error -->
+  @if (loading) {
+    <div class="text-gray-500">Loading...</div>
+  }
+  @if (error) {
+    <div class="text-red-600">{{ error }}</div>
+  }
+
+  <!-- Charts — always in DOM so ng2-charts can update them -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-xl font-medium mb-4">Request Count</h2>
+      <div style="height: 300px; position: relative;">
+        @if (hasData) {
+          <canvas baseChart
+                  [data]="requestChartData"
+                  [options]="chartOptions"
+                  type="line">
+          </canvas>
+        }
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-xl font-medium mb-4">Token Usage</h2>
+      <div style="height: 300px; position: relative;">
+        @if (hasData) {
+          <canvas baseChart
+                  [data]="tokenChartData"
+                  [options]="chartOptions"
+                  type="line">
+          </canvas>
+        }
+      </div>
+    </div>
+  </div>
+</div>

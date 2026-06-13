@@ -1,4 +1,4 @@
-package uk.mahfuj.aigateway.config;
+package uk.mahfuj.argus.config;
 
 import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;

@@ -1,4 +1,4 @@
-package uk.mahfuj.aigateway.config;
+package uk.mahfuj.argus.config;
 
 import lombok.Getter;
 import lombok.Setter;

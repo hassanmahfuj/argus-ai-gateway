@@ -2,8 +2,8 @@
     <div class="container mx-auto px-4 md:px-6">
         <nav class="flex flex-wrap items-center justify-between py-2">
             <a routerLink="/" class="flex py-1.5 mr-4">
-                <img ngSrc="logo.png" i18n-alt="@@app.title" alt="Aigateway" width="30" height="30" class="inline-block" />
-                <span class="text-xl pl-3" i18n="@@app.title">Aigateway</span>
+                <img ngSrc="logo.png" i18n-alt="@@app.title" alt="Argus" width="30" height="30" class="inline-block" />
+                <span class="text-xl pl-3" i18n="@@app.title">Argus</span>
             </a>
             <button type="button" class="js-dropdown md:hidden border rounded cursor-pointer" data-dropdown-keepopen="true"
                     i18n-aria-label="@@navigation.toggle" aria-label="Toggle navigation" aria-controls="navbarToggle" aria-expanded="false">
@@ -17,6 +17,9 @@
                 <ul class="flex">
                     <li>
                         <a routerLink="/" class="block text-gray-500 p-2" i18n="@@navigation.home">Home</a>
+                    </li>
+                    <li>
+                        <a routerLink="/dashboard" class="block text-gray-500 p-2">Dashboard</a>
                     </li>
                 </ul>
             </div>

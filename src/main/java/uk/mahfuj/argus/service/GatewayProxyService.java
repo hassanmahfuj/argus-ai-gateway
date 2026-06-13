@@ -1,6 +1,7 @@
-package uk.mahfuj.aigateway.service;
+package uk.mahfuj.argus.service;
 
-import uk.mahfuj.aigateway.config.GatewayProperties;
+import uk.mahfuj.argus.config.GatewayProperties;
+import uk.mahfuj.argus.domain.ApiRequestLog;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -8,12 +9,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.net.http.HttpClient.Version;
 
@@ -28,10 +33,13 @@ public class GatewayProxyService {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final GatewayProperties properties;
+    private final TokenUsageService tokenUsageService;
     private final HttpClient httpClient;
 
-    public GatewayProxyService(final GatewayProperties properties) {
+    public GatewayProxyService(final GatewayProperties properties,
+                               final TokenUsageService tokenUsageService) {
         this.properties = properties;
+        this.tokenUsageService = tokenUsageService;
         this.httpClient = HttpClient.newBuilder()
                 .version(Version.HTTP_1_1)
                 .connectTimeout(Duration.ofSeconds(properties.getTimeout()))
@@ -43,7 +51,8 @@ public class GatewayProxyService {
             final HttpServletRequest request,
             final HttpServletResponse response,
             final String targetBase,
-            final String subPath
+            final String subPath,
+            final String provider
     ) throws IOException {
         final String query = request.getQueryString();
         final String base = targetBase.replaceAll("/+$", "");
@@ -52,6 +61,7 @@ public class GatewayProxyService {
 
         final byte[] body = request.getInputStream().readAllBytes();
         final String bodyPreview = new String(body).substring(0, Math.min(body.length, 200));
+        final String requestModel = TokenExtractor.extractModelFromRequest(body);
         logRequest(request, target, bodyPreview);
 
         final Map<String, String> headers = new LinkedHashMap<>();
@@ -98,10 +108,27 @@ public class GatewayProxyService {
 
             if (isSse) {
                 log.info("← {} ({}ms) {} [streaming]", proxyResponse.statusCode(), ms, request.getRequestURI());
+                final TokenExtractor.SseTokenAccumulator accumulator = new TokenExtractor.SseTokenAccumulator();
                 try (final java.io.InputStream in = proxyResponse.body()) {
-                    in.transferTo(response.getOutputStream());
-                    response.getOutputStream().flush();
+                    final BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+                    final var out = response.getOutputStream();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        // Accumulate token data from SSE events
+                        if ("anthropic".equals(provider)) {
+                            accumulator.processLine(line);
+                        } else {
+                            accumulator.processOpenAiLine(line);
+                        }
+                        // Forward the line to the client immediately
+                        out.write((line + "\n").getBytes(StandardCharsets.UTF_8));
+                        out.flush();
+                    }
                 }
+                final TokenExtractor.TokenData tokens = accumulator.toTokenData();
+                logTokenUsage(request, provider,
+                        tokens.model() != null ? tokens.model() : requestModel,
+                        proxyResponse.statusCode(), ms, true, tokens);
             } else {
                 try (final java.io.InputStream in = proxyResponse.body()) {
                     final byte[] resBody = in.readAllBytes();
@@ -109,6 +136,11 @@ public class GatewayProxyService {
                     log.debug("  response: {}", new String(resBody).substring(0, Math.min(resBody.length, 300)));
                     response.getOutputStream().write(resBody);
                     response.getOutputStream().flush();
+
+                    final TokenExtractor.TokenData tokens = extractTokens(provider, resBody);
+                    logTokenUsage(request, provider,
+                            tokens.model() != null ? tokens.model() : requestModel,
+                            proxyResponse.statusCode(), ms, false, tokens);
                 }
             }
         } catch (final InterruptedException e) {
@@ -154,6 +186,41 @@ public class GatewayProxyService {
                     objectMapper.writeValueAsBytes(Map.of("error", error, "message", message))
             );
             response.getOutputStream().flush();
+        }
+    }
+
+    private TokenExtractor.TokenData extractTokens(final String provider, final byte[] responseBody) {
+        return switch (provider) {
+            case "anthropic" -> TokenExtractor.extractFromAnthropicResponse(responseBody);
+            case "openai" -> TokenExtractor.extractFromOpenAIResponse(responseBody);
+            default -> TokenExtractor.TokenData.empty();
+        };
+    }
+
+    private void logTokenUsage(
+            final HttpServletRequest request,
+            final String provider,
+            final String model,
+            final int statusCode,
+            final long latencyMs,
+            final boolean isStreaming,
+            final TokenExtractor.TokenData tokens
+    ) {
+        try {
+            final ApiRequestLog logEntry = new ApiRequestLog();
+            logEntry.setTimestamp(Instant.now());
+            logEntry.setProvider(provider);
+            logEntry.setModel(model);
+            logEntry.setInputTokens(tokens != null ? tokens.inputTokens() : 0);
+            logEntry.setOutputTokens(tokens != null ? tokens.outputTokens() : 0);
+            logEntry.setRequestMethod(request.getMethod());
+            logEntry.setRequestPath(request.getRequestURI());
+            logEntry.setResponseStatus(statusCode);
+            logEntry.setLatencyMs(latencyMs);
+            logEntry.setIsStreaming(isStreaming);
+            tokenUsageService.logRequest(logEntry);
+        } catch (final Exception e) {
+            log.warn("Failed to log token usage: {}", e.getMessage());
         }
     }
 

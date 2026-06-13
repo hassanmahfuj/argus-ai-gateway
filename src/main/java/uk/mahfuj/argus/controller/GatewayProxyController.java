@@ -1,7 +1,7 @@
-package uk.mahfuj.aigateway.controller;
+package uk.mahfuj.argus.controller;
 
-import uk.mahfuj.aigateway.config.GatewayProperties;
-import uk.mahfuj.aigateway.service.GatewayProxyService;
+import uk.mahfuj.argus.config.GatewayProperties;
+import uk.mahfuj.argus.service.GatewayProxyService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,13 +27,13 @@ public class GatewayProxyController {
     public void proxyAnthropic(final HttpServletRequest request, final HttpServletResponse response)
             throws IOException {
         final String subPath = proxyService.extractSubPath(request, "/v1/anthropic");
-        proxyService.forward(request, response, properties.getUpstream().getAnthropic(), subPath);
+        proxyService.forward(request, response, properties.getUpstream().getAnthropic(), subPath, "anthropic");
     }
 
     @RequestMapping("/**")
     public void proxyOpenAI(final HttpServletRequest request, final HttpServletResponse response)
             throws IOException {
         final String subPath = proxyService.extractSubPath(request, "/v1");
-        proxyService.forward(request, response, properties.getUpstream().getOpenai(), subPath);
+        proxyService.forward(request, response, properties.getUpstream().getOpenai(), subPath, "openai");
     }
 }

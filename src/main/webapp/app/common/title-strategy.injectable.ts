@@ -9,7 +9,7 @@ import { RouterStateSnapshot, TitleStrategy } from '@angular/router';
 @Injectable()
 export class CustomTitleStrategy extends TitleStrategy {
 
-  titleSuffix = $localize`:@@app.title:Aigateway`;
+  titleSuffix = $localize`:@@app.title:Argus`;
 
   constructor(private readonly title: Title) {
     super();
