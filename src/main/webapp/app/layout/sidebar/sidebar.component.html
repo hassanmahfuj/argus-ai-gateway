@@ -1,0 +1,68 @@
+<aside [class.w-60]="!collapsed()" [class.w-14]="collapsed()"
+       class="flex flex-col shrink-0 bg-white border-r border-slate-200 transition-[width] duration-200 ease-out">
+
+  <!-- Header: logo (always a toggle) + product name + collapse chevron -->
+  <div class="flex items-center gap-2.5 h-14 px-3.5 border-b border-slate-200">
+    <button type="button" (click)="state.toggle()"
+            [attr.aria-label]="collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+            [title]="collapsed() ? 'Xpedia AI' : null"
+            class="w-[26px] h-[26px] rounded-md bg-blue-50 text-blue-500 flex items-center justify-center shrink-0 cursor-pointer">
+      <app-icon name="rocket" [size]="16" />
+    </button>
+    @if (!collapsed()) {
+      <span class="flex-1 text-sm font-medium text-slate-900 truncate">Xpedia AI</span>
+      <button type="button" (click)="state.toggle()" aria-label="Collapse sidebar"
+              class="w-6 h-6 flex items-center justify-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-100 cursor-pointer">
+        <app-icon name="chevron-left" [size]="14" />
+      </button>
+    }
+  </div>
+
+  <!-- Nav -->
+  <nav class="flex-1 overflow-y-auto overflow-x-hidden p-2">
+    @for (item of topItems; track item.id) {
+      <ng-container *ngTemplateOutlet="itemTpl; context: { $implicit: item }" />
+    }
+
+    @for (group of groups; track group.label) {
+      @if (!collapsed()) {
+        <button type="button" (click)="toggleGroup(group.label)"
+                class="flex items-center gap-1 px-2.5 pt-2.5 pb-1 text-[11px] uppercase tracking-wide text-slate-400 cursor-pointer w-full">
+          <span [class.rotate-0]="isGroupOpen(group.label)" [class.-rotate-90]="!isGroupOpen(group.label)"
+                class="transition-transform inline-flex">
+            <app-icon name="chevron-down" [size]="11" />
+          </span>
+          <span>{{ group.label }}</span>
+        </button>
+      }
+      @if (isGroupOpen(group.label) || collapsed()) {
+        @for (item of group.items; track item.id) {
+          <ng-container *ngTemplateOutlet="itemTpl; context: { $implicit: item }" />
+        }
+      }
+    }
+  </nav>
+</aside>
+
+<!-- Single source of truth for a nav item row (used by top items + group items) -->
+<ng-template #itemTpl let-item>
+  <a role="button" tabindex="0"
+     (click)="selectItem(item.id)"
+     [attr.title]="collapsed() ? item.label : null"
+     [class.bg-slate-50]="isActive(item.id)"
+     [class.font-medium]="isActive(item.id)"
+     [class.justify-center]="collapsed()"
+     [class.px-2.5]="!collapsed()"
+     class="flex items-center gap-2.5 px-2.5 py-[7px] my-0.5 rounded-lg text-[13px] text-slate-500 hover:bg-slate-100 cursor-pointer transition-colors">
+    <span [class.text-slate-800]="isActive(item.id)" [class.text-slate-400]="!isActive(item.id)"
+          class="inline-flex shrink-0">
+      <app-icon [name]="item.icon" [size]="16" />
+    </span>
+    @if (!collapsed()) {
+      <span [class.text-slate-800]="isActive(item.id)" class="flex-1 truncate">{{ item.label }}</span>
+      @if (item.badgeDot) {
+        <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+      }
+    }
+  </a>
+</ng-template>
