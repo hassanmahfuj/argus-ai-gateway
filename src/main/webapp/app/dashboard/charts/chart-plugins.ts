@@ -3,15 +3,20 @@ import { ChartOptions, Plugin } from 'chart.js';
 
 /**
  * Scale config that hides the y-axis + gridlines and shows ONLY the first and last
- * x-axis labels (e.g. "22 Feb" … "23 May"). Used by the Requests, Costs and Latency
- * charts so they read like the reference design.
+ * x-axis labels (e.g. "22 Feb" … "23 May"). Used by the Requests, Token Usage and
+ * Latency charts so they read like the reference design.
+ *
+ * `opts.stacked = true` stacks the datasets (needed for the Token Usage bar chart);
+ * the y-axis stays hidden but must still be flagged `stacked` for the bars to pile up.
  *
  * Non-generic: 'line' and 'bar' share identical cartesian scale option types, so the
  * returned object satisfies both `ChartOptions<'line'>['scales']` and the bar variant.
  */
-export function endOnlyScales(): NonNullable<ChartOptions<'line'>['scales']> {
+export function endOnlyScales(opts: { stacked?: boolean } = {}): NonNullable<ChartOptions<'line'>['scales']> {
+  const stacked = opts.stacked ?? false;
   return {
     x: {
+      stacked,
       grid: { display: false },
       border: { display: false },
       ticks: {
@@ -24,7 +29,7 @@ export function endOnlyScales(): NonNullable<ChartOptions<'line'>['scales']> {
         },
       },
     },
-    y: { display: false, grid: { display: false } },
+    y: { stacked, display: false, grid: { display: false } },
   } as unknown as NonNullable<ChartOptions<'line'>['scales']>;
 }
 

@@ -1,0 +1,92 @@
+<div class="space-y-4">
+  <!-- Top bar -->
+  <div class="flex items-center justify-between gap-4 flex-wrap">
+    <!-- Left: title + refresh + live + date range -->
+    <div class="flex items-center gap-3 flex-wrap">
+      <div class="flex items-center gap-2">
+        <h1 class="text-lg font-medium text-slate-900">Requests</h1>
+        <button type="button" aria-label="Refresh"
+                class="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 cursor-pointer">
+          <app-icon name="refresh" [size]="15" />
+        </button>
+      </div>
+
+      <button type="button" (click)="toggleLive()"
+              [class.border-green-300]="isLive()"
+              class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-100 cursor-pointer">
+        <span class="w-2 h-2 rounded-full bg-green-500" [class.animate-pulse]="isLive()"></span>
+        {{ isLive() ? 'Stop Live' : 'Start Live' }}
+      </button>
+
+      <div class="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs text-slate-500">
+        <app-icon name="calendar" [size]="14" />
+        <span>Oct 13, 2024 12:23 - Nov 12, 2024 11:23</span>
+      </div>
+    </div>
+
+    <!-- Right: icon ghost buttons + text buttons -->
+    <div class="flex items-center gap-2 flex-wrap">
+      <button type="button" aria-label="Settings"
+              class="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 cursor-pointer">
+        <app-icon name="sliders" [size]="15" />
+      </button>
+      <button type="button" aria-label="Download"
+              class="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 cursor-pointer">
+        <app-icon name="download" [size]="15" />
+      </button>
+      <button type="button" aria-label="Layers"
+              class="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 cursor-pointer">
+        <app-icon name="layers" [size]="15" />
+      </button>
+      <button type="button" aria-label="AI assistant"
+              class="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 cursor-pointer">
+        <app-icon name="sparkle" [size]="15" />
+      </button>
+      <button type="button"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-100 cursor-pointer">
+        <app-icon name="funnel" [size]="14" /> Filters
+      </button>
+      <button type="button"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-100 cursor-pointer">
+        <app-icon name="bookmark" [size]="14" /> Saved Filters
+      </button>
+    </div>
+  </div>
+
+  <!-- Active model filter chip -->
+  @if (filters().model) {
+    <div class="flex items-center gap-2 text-xs text-slate-500">
+      <span>Filtered by model:</span>
+      <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#F3F0FF] text-[#5B21B6] font-medium">
+        {{ filters().model }}
+        <button type="button" (click)="onModelFilter(filters().model!)" aria-label="Clear model filter"
+                class="inline-flex items-center cursor-pointer">
+          <app-icon name="close" [size]="12" />
+        </button>
+      </span>
+    </div>
+  }
+
+  <!-- Card: table + pagination -->
+  <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <app-requests-table
+      [rows]="paged()"
+      [sortColumn]="sortColumn()"
+      [sortDirection]="sortDirection()"
+      (sortChange)="onSort($event)"
+      (rowSelect)="selectedRow.set($event)"
+      (modelFilter)="onModelFilter($event)" />
+
+    <div class="border-t border-slate-200">
+      <app-requests-pagination
+        [currentPage]="safePage()"
+        [totalPages]="totalPages()"
+        [rowsPerPage]="rowsPerPage()"
+        (pageChange)="onPageChange($event)"
+        (rowsPerPageChange)="onRowsPerPage($event)" />
+    </div>
+  </div>
+
+  <!-- Detail drawer -->
+  <app-request-detail-drawer [row]="selectedRow()" (close)="selectedRow.set(null)" />
+</div>

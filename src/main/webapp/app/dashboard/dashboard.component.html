@@ -22,10 +22,10 @@
     <app-card><app-top-models-card [models]="models" /></app-card>
   </div>
 
-  <!-- Row 2: Costs | Top Countries | Latency -->
+  <!-- Row 2: Token Usage | Cache Hit Rate | Latency -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <app-card><app-costs-card [data]="costs" /></app-card>
-    <app-card><app-top-countries-card [countries]="countries" /></app-card>
+    <app-card><app-token-usage-card [data]="tokenUsage" /></app-card>
+    <app-card><app-cache-hit-card [data]="cacheHit" /></app-card>
     <app-card><app-latency-card [data]="latency" /></app-card>
   </div>
 </div>

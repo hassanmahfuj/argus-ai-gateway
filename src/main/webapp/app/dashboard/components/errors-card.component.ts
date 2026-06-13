@@ -13,7 +13,7 @@ import { createDonutCenterPlugin } from '../charts/chart-plugins';
   imports: [CommonModule, BaseChartDirective],
   template: `
     <div class="flex flex-col h-full">
-      <span class="text-[13px] text-slate-400 mb-4">Errors</span>
+      <span class="text-[13px] font-medium text-slate-500 mb-4">Errors</span>
       <div class="flex items-center gap-5 flex-1">
         <div class="relative shrink-0" style="width: 160px; height: 160px;">
           <canvas baseChart [data]="doughnutData" [options]="doughnutOptions" [plugins]="plugins" [type]="'doughnut'"></canvas>
@@ -23,7 +23,7 @@ import { createDonutCenterPlugin } from '../charts/chart-plugins';
             <div class="flex items-center gap-2 text-[13px]">
               <span class="w-2 h-2 rounded-full shrink-0" [style.background]="seg.color"></span>
               <span class="text-slate-600">{{ seg.code }}</span>
-              <span class="text-slate-400 ml-auto tabular-nums">{{ seg.value | number }}</span>
+              <span class="text-slate-500 ml-auto tabular-nums">{{ seg.value | number }}</span>
             </div>
           }
         </div>

@@ -8,7 +8,8 @@ import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from 
   template: `
     <div class="inline-flex items-center gap-1">
       @for (range of ranges; track range) {
-        <button type="button" (click)="select(range)" [class]="buttonClass(range)">
+        <button type="button" (click)="select(range)" [class]="buttonClass(range)"
+                [attr.aria-pressed]="value === range">
           {{ range }}
         </button>
       }

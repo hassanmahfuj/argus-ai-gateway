@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import {
-  CostsMetric,
+  CacheHitMetric,
   ErrorsMetric,
   LatencyMetric,
   RequestsMetric,
-  TopCountry,
+  TokenUsageMetric,
   TopModel,
 } from './dashboard.model';
 
@@ -34,8 +34,8 @@ export class DashboardDataService {
       totalLabel: 'Total Errors',
       segments: [
         { code: '400', value: 3500, color: '#38BDF8' },
-        { code: '401', value: 500, color: '#2DD4BF' },
-        { code: '500', value: 273, color: '#0EA5E9' },
+        { code: '401', value: 500, color: '#A78BFA' },
+        { code: '500', value: 273, color: '#2DD4BF' },
       ],
     };
   }
@@ -51,22 +51,22 @@ export class DashboardDataService {
     ];
   }
 
-  getCosts(): CostsMetric {
+  getTokenUsage(): TokenUsageMetric {
     return {
-      kpi: '$93,128.22',
-      labels: ['22 Feb', '1 Mar', '8 Mar', '15 Mar', '22 Mar', '29 Mar', '5 Apr', '12 Apr', '19 Apr', '23 May'],
-      values: [8200, 9100, 8800, 9400, 8600, 9300, 9700, 8900, 9500, 9200],
+      kpi: '8.42M',
+      labels: ['22 Feb', '1 Mar', '8 Mar', '15 Mar', '22 Mar', '29 Mar', '5 Apr', '12 Apr', '19 Apr', '26 Apr', '3 May', '23 May'],
+      prompt: [612000, 648000, 598000, 671000, 633000, 690000, 655000, 712000, 668000, 640000, 695000, 681000],
+      completion: [286000, 312000, 264000, 338000, 295000, 351000, 318000, 369000, 322000, 301000, 357000, 340000],
     };
   }
 
-  getTopCountries(): TopCountry[] {
-    return [
-      { flag: '🇺🇸', name: 'United States', iso: 'US', count: '1,402,330' },
-      { flag: '🇬🇧', name: 'United Kingdom', iso: 'GB', count: '612,450' },
-      { flag: '🇩🇪', name: 'Germany', iso: 'DE', count: '487,910' },
-      { flag: '🇯🇵', name: 'Japan', iso: 'JP', count: '399,080' },
-      { flag: '🇧🇷', name: 'Brazil', iso: 'BR', count: '263,715' },
-    ];
+  getCacheHit(): CacheHitMetric {
+    return {
+      hit: 82,
+      miss: 18,
+      kpi: '82%',
+      kpiLabel: 'Cache Hit',
+    };
   }
 
   getLatency(): LatencyMetric {

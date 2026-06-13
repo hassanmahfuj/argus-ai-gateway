@@ -8,7 +8,7 @@ import { TopModel } from '../data/dashboard.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="flex flex-col h-full">
-      <span class="text-[13px] text-slate-400 mb-3">Top Models</span>
+      <span class="text-[13px] font-medium text-slate-500 mb-3">Top Models</span>
       <div class="flex flex-col">
         @for (model of models; track model.name; let i = $index) {
           <div class="flex items-center justify-between gap-3 py-2 border-b border-slate-100 last:border-0">

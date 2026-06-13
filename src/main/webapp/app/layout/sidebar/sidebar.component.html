@@ -27,7 +27,7 @@
     @for (group of groups; track group.label) {
       @if (!collapsed()) {
         <button type="button" (click)="toggleGroup(group.label)"
-                class="flex items-center gap-1 px-2.5 pt-2.5 pb-1 text-[11px] uppercase tracking-wide text-slate-400 cursor-pointer w-full">
+                class="flex items-center gap-1 px-2.5 pt-2.5 pb-1 text-[11px] uppercase tracking-wide text-slate-500 cursor-pointer w-full">
           <span [class.rotate-0]="isGroupOpen(group.label)" [class.-rotate-90]="!isGroupOpen(group.label)"
                 class="transition-transform inline-flex">
             <app-icon name="chevron-down" [size]="11" />
@@ -47,14 +47,18 @@
 <!-- Single source of truth for a nav item row (used by top items + group items) -->
 <ng-template #itemTpl let-item>
   <a role="button" tabindex="0"
+     [routerLink]="item.route ?? null"
      (click)="selectItem(item.id)"
+     (keydown.enter)="selectItem(item.id)"
+     (keydown.space)="selectItem(item.id); $event.preventDefault()"
+     [attr.aria-current]="isActive(item.id) ? 'page' : null"
      [attr.title]="collapsed() ? item.label : null"
      [class.bg-slate-50]="isActive(item.id)"
      [class.font-medium]="isActive(item.id)"
      [class.justify-center]="collapsed()"
      [class.px-2.5]="!collapsed()"
      class="flex items-center gap-2.5 px-2.5 py-[7px] my-0.5 rounded-lg text-[13px] text-slate-500 hover:bg-slate-100 cursor-pointer transition-colors">
-    <span [class.text-slate-800]="isActive(item.id)" [class.text-slate-400]="!isActive(item.id)"
+    <span [class.text-slate-800]="isActive(item.id)" [class.text-slate-500]="!isActive(item.id)"
           class="inline-flex shrink-0">
       <app-icon [name]="item.icon" [size]="16" />
     </span>

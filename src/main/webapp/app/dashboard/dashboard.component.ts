@@ -5,11 +5,11 @@ import { TimeRangeToggleComponent } from './components/time-range-toggle.compone
 import { RequestsCardComponent } from './components/requests-card.component';
 import { ErrorsCardComponent } from './components/errors-card.component';
 import { TopModelsCardComponent } from './components/top-models-card.component';
-import { CostsCardComponent } from './components/costs-card.component';
-import { TopCountriesCardComponent } from './components/top-countries-card.component';
+import { TokenUsageCardComponent } from './components/token-usage-card.component';
+import { CacheHitCardComponent } from './components/cache-hit-card.component';
 import { LatencyCardComponent } from './components/latency-card.component';
 import { DashboardDataService } from './data/dashboard-data.service';
-import { CostsMetric, ErrorsMetric, LatencyMetric, RequestsMetric, TopCountry, TopModel } from './data/dashboard.model';
+import { CacheHitMetric, ErrorsMetric, LatencyMetric, RequestsMetric, TokenUsageMetric, TopModel } from './data/dashboard.model';
 
 
 @Component({
@@ -22,8 +22,8 @@ import { CostsMetric, ErrorsMetric, LatencyMetric, RequestsMetric, TopCountry, T
     RequestsCardComponent,
     ErrorsCardComponent,
     TopModelsCardComponent,
-    CostsCardComponent,
-    TopCountriesCardComponent,
+    TokenUsageCardComponent,
+    CacheHitCardComponent,
     LatencyCardComponent,
   ],
   templateUrl: './dashboard.component.html',
@@ -37,8 +37,8 @@ export class DashboardComponent {
   protected readonly requests: RequestsMetric = this.data.getRequests();
   protected readonly errors: ErrorsMetric = this.data.getErrors();
   protected readonly models: TopModel[] = this.data.getTopModels();
-  protected readonly costs: CostsMetric = this.data.getCosts();
-  protected readonly countries: TopCountry[] = this.data.getTopCountries();
+  protected readonly tokenUsage: TokenUsageMetric = this.data.getTokenUsage();
+  protected readonly cacheHit: CacheHitMetric = this.data.getCacheHit();
   protected readonly latency: LatencyMetric = this.data.getLatency();
 
   protected selectRange(range: string): void {

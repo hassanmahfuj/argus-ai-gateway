@@ -1,5 +1,8 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import { filter } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { IconComponent, IconName } from 'app/common/icons/icon.component';
 import { LayoutStateService } from '../layout-state.service';
 
@@ -9,6 +12,8 @@ interface NavItem {
   label: string;
   icon: IconName;
   badgeDot?: boolean;
+  /** When set, the item navigates to this router path; otherwise it's a no-op mock item. */
+  route?: string;
 }
 
 interface NavGroup {
@@ -20,23 +25,45 @@ interface NavGroup {
 @Component({
   selector: 'app-sidebar',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, IconComponent],
+  imports: [NgTemplateOutlet, IconComponent, RouterLink],
   templateUrl: './sidebar.component.html',
 })
 export class SidebarComponent {
 
   protected readonly state = inject(LayoutStateService);
+  private readonly router = inject(Router);
 
   /** Alias of the shared collapse signal for template use. */
   protected readonly collapsed = this.state.collapsed;
 
   protected readonly activeItem = signal('dashboard');
 
+  /** Maps router URLs back to nav item ids so active state survives reload / back-forward. */
+  private readonly routeToItem: Readonly<Record<string, string>> = {
+    '/': 'dashboard',
+    '': 'dashboard',
+    '/requests': 'requests',
+  };
+
+  constructor() {
+    this.router.events
+      .pipe(
+        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
+      .subscribe((e) => {
+        const id = this.routeToItem[e.urlAfterRedirects];
+        if (id) {
+          this.activeItem.set(id);
+        }
+      });
+  }
+
   protected readonly openGroups = signal<Set<string>>(new Set(['Segments', 'Improve', 'Monitor']));
 
   protected readonly topItems: NavItem[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: 'home' },
-    { id: 'requests', label: 'Requests', icon: 'grid', badgeDot: true },
+    { id: 'dashboard', label: 'Dashboard', icon: 'home', route: '' },
+    { id: 'requests', label: 'Requests', icon: 'grid', badgeDot: true, route: 'requests' },
   ];
 
   protected readonly groups: NavGroup[] = [

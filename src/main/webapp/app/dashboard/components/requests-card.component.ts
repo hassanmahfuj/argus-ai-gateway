@@ -13,7 +13,7 @@ import { endOnlyScales } from '../charts/chart-plugins';
   template: `
     <div class="flex flex-col h-full">
       <div class="flex items-center justify-between mb-3">
-        <span class="text-[13px] text-slate-400">Requests</span>
+        <span class="text-[13px] font-medium text-slate-500">Requests</span>
         <div class="flex items-center gap-3">
           <span class="inline-flex items-center gap-1.5 text-xs text-slate-500">
             <span class="w-2 h-2 rounded-full bg-green-500"></span>success

@@ -12,10 +12,10 @@ import { createRefBandPlugin, endOnlyScales } from '../charts/chart-plugins';
   imports: [BaseChartDirective],
   template: `
     <div class="flex flex-col h-full">
-      <span class="text-[13px] text-slate-400 mb-3">Latency</span>
+      <span class="text-[13px] font-medium text-slate-500 mb-3">Latency</span>
       <div class="mb-4">
         <span class="text-[28px] font-medium text-slate-900">{{ data.kpi }}</span>
-        <span class="text-sm text-slate-400 ml-1">{{ data.kpiUnit }}</span>
+        <span class="text-sm text-slate-500 ml-1">{{ data.kpiUnit }}</span>
       </div>
       <div class="flex-1" style="height: 170px; position: relative;">
         <canvas baseChart [data]="lineData" [options]="lineOptions" [plugins]="plugins" [type]="'line'"></canvas>

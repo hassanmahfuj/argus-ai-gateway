@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 @Component({
   selector: 'app-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<div class="bg-white rounded-xl border border-slate-200 p-5 h-full"><ng-content /></div>`,
+  template: `<div class="bg-white rounded-xl border border-slate-200 p-5 h-full transition-colors hover:border-slate-300"><ng-content /></div>`,
 })
 export class CardComponent {
 }

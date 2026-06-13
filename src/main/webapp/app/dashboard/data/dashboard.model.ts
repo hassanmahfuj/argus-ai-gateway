@@ -23,17 +23,18 @@ export interface TopModel {
   count: string;
 }
 
-export interface CostsMetric {
+export interface TokenUsageMetric {
   labels: string[];
-  values: number[];
+  prompt: number[];
+  completion: number[];
   kpi: string;
 }
 
-export interface TopCountry {
-  flag: string;
-  name: string;
-  iso: string;
-  count: string;
+export interface CacheHitMetric {
+  hit: number;
+  miss: number;
+  kpi: string;
+  kpiLabel: string;
 }
 
 export interface LatencyMetric {
