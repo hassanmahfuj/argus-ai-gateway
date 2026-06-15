@@ -1,15 +1,15 @@
-package uk.mahfuj.argus.repos;
+package uk.mahfuj.argus.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import uk.mahfuj.argus.domain.ApiRequestLog;
+import uk.mahfuj.argus.entity.ApiRequestLogEntity;
 
 import java.time.Instant;
 import java.util.List;
 
 
-public interface ApiRequestLogRepository extends JpaRepository<ApiRequestLog, Long> {
+public interface ApiRequestLogRepository extends JpaRepository<ApiRequestLogEntity, Long> {
 
     @Query(value = """
             SELECT date_trunc(:granularity, timestamp) AS bucket,

@@ -1,10 +1,10 @@
-package uk.mahfuj.argus.service.dto;
+package uk.mahfuj.argus.dto;
 
 import java.time.Instant;
 import java.util.List;
 
 
-public record DashboardResponse(
+public record DashboardUsageResponse(
         String granularity,
         Instant from,
         Instant to,

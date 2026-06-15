@@ -1,19 +1,18 @@
 package uk.mahfuj.argus.service;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import uk.mahfuj.argus.repos.ApiRequestLogRepository;
-import uk.mahfuj.argus.service.dto.DashboardResponse;
-import uk.mahfuj.argus.service.dto.DashboardResponse.DataPoint;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import uk.mahfuj.argus.dto.DashboardUsageResponse;
+import uk.mahfuj.argus.exception.BadRequestException;
+import uk.mahfuj.argus.mapper.DashboardUsageMapper;
+import uk.mahfuj.argus.repository.ApiRequestLogRepository;
 
 
 @Service
@@ -23,15 +22,17 @@ public class DashboardService {
     private static final Set<String> VALID_GRANULARITIES = Set.of("hour", "day", "week", "month");
 
     private final ApiRequestLogRepository repository;
+    private final DashboardUsageMapper mapper;
 
-    public DashboardService(final ApiRequestLogRepository repository) {
+    public DashboardService(final ApiRequestLogRepository repository, final DashboardUsageMapper mapper) {
         this.repository = repository;
+        this.mapper = mapper;
     }
 
-    public DashboardResponse getDashboardData(final String granularity, final Instant from, final Instant to) {
+    public DashboardUsageResponse getDashboardData(final String granularity, final Instant from, final Instant to) {
         final String normalizedGranularity = granularity.toLowerCase();
         if (!VALID_GRANULARITIES.contains(normalizedGranularity)) {
-            throw new IllegalArgumentException("Invalid granularity: " + granularity
+            throw new BadRequestException("Invalid granularity: " + granularity
                     + ". Must be one of: hour, day, week, month");
         }
 
@@ -41,20 +42,9 @@ public class DashboardService {
         log.debug("Dashboard query: granularity={}, from={}, to={}", normalizedGranularity, resolvedFrom, resolvedTo);
 
         final List<Object[]> rows = repository.getUsageAggregation(normalizedGranularity, resolvedFrom, resolvedTo);
-
         log.debug("Dashboard query returned {} rows", rows.size());
 
-        final List<DataPoint> dataPoints = new ArrayList<>();
-        for (final Object[] row : rows) {
-            final Instant bucket = toInstant(row[0]);
-            final long requestCount = ((Number) row[1]).longValue();
-            final long inputTokens = ((Number) row[2]).longValue();
-            final long outputTokens = ((Number) row[3]).longValue();
-            log.debug("Bucket: {} -> count={}, in={}, out={}", bucket, requestCount, inputTokens, outputTokens);
-            dataPoints.add(new DataPoint(bucket, requestCount, inputTokens, outputTokens));
-        }
-
-        return new DashboardResponse(normalizedGranularity, resolvedFrom, resolvedTo, dataPoints);
+        return new DashboardUsageResponse(normalizedGranularity, resolvedFrom, resolvedTo, mapper.toDataPoints(rows));
     }
 
     private Instant defaultFrom(final String granularity) {
@@ -66,18 +56,5 @@ public class DashboardService {
             case "month" -> now.minus(365, ChronoUnit.DAYS);
             default -> now.minus(30, ChronoUnit.DAYS);
         };
-    }
-
-    private static Instant toInstant(final Object value) {
-        if (value instanceof Instant instant) {
-            return instant;
-        }
-        if (value instanceof Timestamp ts) {
-            return ts.toInstant();
-        }
-        if (value instanceof Date date) {
-            return date.toInstant();
-        }
-        throw new IllegalStateException("Unexpected type for timestamp column: " + value.getClass());
     }
 }

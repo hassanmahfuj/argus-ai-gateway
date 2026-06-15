@@ -1,4 +1,4 @@
-package uk.mahfuj.argus.domain;
+package uk.mahfuj.argus.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,7 +22,7 @@ import java.time.Instant;
         @Index(name = "idx_apirequestlog_timestamp", columnList = "timestamp"),
         @Index(name = "idx_apirequestlog_provider_timestamp", columnList = "provider, timestamp")
 })
-public class ApiRequestLog {
+public class ApiRequestLogEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
