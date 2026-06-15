@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class AngularForwardController {
 
-    @GetMapping("{path:^(?!api|public|swagger)[^\\.]*}/**")
+    @GetMapping("{path:^(?!api|v1|public|swagger)[^\\.]*}/**")
     public String handleForward() {
         return "forward:/";
     }

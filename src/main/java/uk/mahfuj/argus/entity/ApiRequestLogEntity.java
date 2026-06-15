@@ -37,6 +37,10 @@ public class ApiRequestLogEntity {
     @Column(name = "model", length = 100)
     private String model;
 
+    /** The model/alias string exactly as the client sent it (before resolution). */
+    @Column(name = "requested_model", length = 200)
+    private String requestedModel;
+
     @Column(name = "input_tokens")
     private Integer inputTokens = 0;
 

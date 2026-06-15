@@ -1,9 +1,13 @@
 package uk.mahfuj.argus.exception;
 
 /**
- * Base class for management-API ({@code /api/**}) domain exceptions.
- * Carries the HTTP status and error code that {@link GlobalExceptionHandler}
- * maps onto the {@link uk.mahfuj.argus.dto.ErrorResponse} envelope.
+ * Base for Argus domain exceptions. Carries the HTTP status and error code.
+ *
+ * <p>Two scopes: management-API ({@code /api/**}) subclasses like
+ * {@link BadRequestException} are mapped by {@link GlobalExceptionHandler} onto the
+ * {@link uk.mahfuj.argus.dto.ErrorResponse} envelope; proxy ({@code /v1}) subclasses
+ * like {@link ResolutionException} are caught inside the proxy orchestrator and
+ * rendered as a per-shape envelope, so they never reach that advice.
  */
 public abstract class ArgusException extends RuntimeException {
 

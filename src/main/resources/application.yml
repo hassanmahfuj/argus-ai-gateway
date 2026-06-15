@@ -1,10 +1,8 @@
-gateway:
+argus:
+  encryption:
+    key: ${ARGUS_ENC_KEY:}
   proxy:
-    api-key: ${ZAI_API_KEY:}
     timeout: 120
-    upstream:
-      openai: https://api.z.ai/api/coding/paas/v4
-      anthropic: https://api.z.ai/api/anthropic
 
 spring:
   datasource:

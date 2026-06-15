@@ -17,22 +17,25 @@ import java.util.Map;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import uk.mahfuj.argus.config.GatewayProperties;
 import uk.mahfuj.argus.service.token.SseTokenAccumulator;
 import uk.mahfuj.argus.service.token.TokenUsage;
 import uk.mahfuj.argus.service.token.TokenUsageExtractor;
 
 
 /**
- * Performs the actual upstream HTTP exchange: header mapping (with hop-by-hop
- * filtering and bearer-token injection), the send, response status/header copy,
- * and streaming (SSE) or buffered body forwarding with token extraction.
- * Returns a {@link ProxyResult}; the orchestrator owns persistence and errors.
+ * Performs the actual upstream HTTP exchange for a resolved target: rewrites the
+ * request body's {@code model} field to the upstream name, copies headers (with
+ * hop-by-hop filtering) and injects the resolved provider's bearer token, sends,
+ * then streams (SSE) or buffers the response while extracting token usage. Returns
+ * a {@link ProxyResult}; the orchestrator owns persistence and errors.
  */
 @Component
 public class ProxyExecutor {
@@ -40,14 +43,17 @@ public class ProxyExecutor {
     private static final Logger log = LoggerFactory.getLogger(ProxyExecutor.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final GatewayProperties properties;
+    private final UpstreamResolver upstreamResolver;
+    private final int timeoutSeconds;
     private final HttpClient httpClient;
 
-    public ProxyExecutor(final GatewayProperties properties) {
-        this.properties = properties;
+    public ProxyExecutor(final UpstreamResolver upstreamResolver,
+                         @Value("${argus.proxy.timeout:120}") final int timeoutSeconds) {
+        this.upstreamResolver = upstreamResolver;
+        this.timeoutSeconds = timeoutSeconds;
         this.httpClient = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_1_1)
-                .connectTimeout(Duration.ofSeconds(properties.getTimeout()))
+                .connectTimeout(Duration.ofSeconds(timeoutSeconds))
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .build();
     }
@@ -55,14 +61,14 @@ public class ProxyExecutor {
     public ProxyResult execute(
             final HttpServletRequest request,
             final HttpServletResponse response,
-            final ProxyTarget target,
-            final TokenUsageExtractor extractor
+            final ResolvedTarget target,
+            final TokenUsageExtractor extractor,
+            final byte[] rawBody
     ) throws IOException, InterruptedException {
 
-        final String targetUrl = target.targetUrl();
-        final byte[] body = request.getInputStream().readAllBytes();
-        final String bodyPreview = new String(body).substring(0, Math.min(body.length, 200));
-        final String requestModel = TokenUsageExtractor.extractModel(body);
+        final String targetUrl = upstreamResolver.buildTargetUrl(request, target);
+        final byte[] body = rewriteModel(rawBody, target.upstreamModel());
+        final String bodyPreview = new String(rawBody).substring(0, Math.min(rawBody.length, 200));
         logRequest(request, targetUrl, bodyPreview);
 
         final Map<String, String> headers = new LinkedHashMap<>();
@@ -73,15 +79,12 @@ public class ProxyExecutor {
                 headers.put(name, request.getHeader(name));
             }
         }
-
-        if (properties.getApiKey() != null && !properties.getApiKey().isBlank()) {
-            headers.put("Authorization", "Bearer " + properties.getApiKey());
-        }
+        headers.put("Authorization", "Bearer " + target.apiKey());
 
         final HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
                 .uri(URI.create(targetUrl))
                 .method(request.getMethod(), HttpRequest.BodyPublishers.ofByteArray(body))
-                .timeout(Duration.ofSeconds(properties.getTimeout()));
+                .timeout(Duration.ofSeconds(timeoutSeconds));
         headers.forEach(reqBuilder::header);
 
         final long start = System.currentTimeMillis();
@@ -118,7 +121,7 @@ public class ProxyExecutor {
                 }
             }
             final TokenUsage tokens = accumulator.toTokenUsage();
-            return new ProxyResult(proxyResponse.statusCode(), ms, true, requestModel, tokens);
+            return new ProxyResult(proxyResponse.statusCode(), ms, true, target.upstreamModel(), tokens);
         }
 
         try (final InputStream in = proxyResponse.body()) {
@@ -129,8 +132,30 @@ public class ProxyExecutor {
             response.getOutputStream().flush();
 
             final TokenUsage tokens = extractor.extract(resBody);
-            return new ProxyResult(proxyResponse.statusCode(), ms, false, requestModel, tokens);
+            return new ProxyResult(proxyResponse.statusCode(), ms, false, target.upstreamModel(), tokens);
         }
+    }
+
+    /**
+     * Rewrites the top-level {@code model} field to the upstream name. Both the
+     * OpenAI and Anthropic shapes carry {@code model} at the top level, so one
+     * transform covers both. If the body isn't valid JSON or lacks the field, it is
+     * forwarded unchanged — Argus never invents a model.
+     */
+    static byte[] rewriteModel(final byte[] body, final String upstreamModel) {
+        if (upstreamModel == null || body == null || body.length == 0) {
+            return body;
+        }
+        try {
+            final JsonNode root = objectMapper.readTree(body);
+            if (root.isObject() && root.has("model")) {
+                ((ObjectNode) root).put("model", upstreamModel);
+                return objectMapper.writeValueAsBytes(root);
+            }
+        } catch (final Exception e) {
+            log.debug("Could not rewrite model field in request body: {}", e.getMessage());
+        }
+        return body;
     }
 
     private void logRequest(final HttpServletRequest request, final String target, final String bodyPreview) {

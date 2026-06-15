@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import uk.mahfuj.argus.service.proxy.Provider;
+import uk.mahfuj.argus.service.proxy.ApiShape;
 
 
 @Component
@@ -14,8 +14,8 @@ public class AnthropicTokenUsageExtractor implements TokenUsageExtractor {
     private static final Logger log = LoggerFactory.getLogger(AnthropicTokenUsageExtractor.class);
 
     @Override
-    public Provider provider() {
-        return Provider.ANTHROPIC;
+    public ApiShape shape() {
+        return ApiShape.ANTHROPIC;
     }
 
     @Override
